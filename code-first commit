@@ -1,0 +1,185 @@
+#include <iostream>
+#include <fstream>
+#include <iomanip>
+#include <ctime>
+//#include <Windows.h>
+#include <process.h>
+
+using namespace std;
+
+const int MAXARRAY = 10000;
+double *staticarr;
+ofstream fout("output.txt");
+CRITICAL_SECTION sync;
+
+unsigned __stdcall thread1( void *arg );
+unsigned __stdcall thread2( void *arg );
+unsigned __stdcall thread3( void *arg );
+unsigned __stdcall thread4( void *arg );
+unsigned __stdcall thread5( void *arg );
+
+void bubblesort(double[], int);
+void selectsort(double[], int);
+void insertionsort(double[], int);
+void quicksort(double [], int, int);
+void shellsort(double temp[], int n);
+
+void input(double[]);
+void initarr(double[], double[]);
+void print(double[], ofstream&, double);
+void swaparr(double&, double&);
+
+int main()
+{
+	clock_t tstart, tend;
+	HANDLE hs[5];
+	unsigned th1, th2, th3, th4, th5;
+	fout << fixed << setprecision(3);
+	InitializeCriticalSection(&sync);
+
+	staticarr = new double[MAXARRAY];
+	input(staticarr);
+
+	cout << "Sorting data using five methods.\n" <<
+			"1) Bubble Sort.\n" <<
+			"2) Select Sort.\n" <<
+			"3) Insertion Sort.\n" <<
+			"4) Quick Sort.\n" <<
+			"5) Shell Sort." <<endl;
+
+	fout << "Starting multi-threaded sorting>>>>>" << endl << endl;
+	tstart = clock();
+
+		hs[0] = (HANDLE)_beginthreadex(NULL, 0, thread1, NULL, CREATE_SUSPENDED, &th1);
+		hs[1] = (HANDLE)_beginthreadex(NULL, 0, thread2, NULL, CREATE_SUSPENDED, &th2);
+		hs[2] = (HANDLE)_beginthreadex(NULL, 0, thread3, NULL, CREATE_SUSPENDED, &th3);
+		hs[3] = (HANDLE)_beginthreadex(NULL, 0, thread4, NULL, CREATE_SUSPENDED, &th4);
+		hs[4] = (HANDLE)_beginthreadex(NULL, 0, thread5, NULL, CREATE_SUSPENDED, &th5);
+
+		ResumeThread(hs[0]);
+		ResumeThread(hs[1]);
+		ResumeThread(hs[2]);
+		ResumeThread(hs[3]);
+		ResumeThread(hs[4]);
+
+		WaitForMultipleObjects(5, hs, true, INFINITE);
+
+	
+	tend = clock();
+	fout << endl << "Total processing time: " << ((tend - tstart) / (double)CLOCKS_PER_SEC);
+	fout.close();
+	cin.get();
+	
+	return 0;
+}
+
+unsigned __stdcall thread1( void *arg )
+{
+	clock_t start, end;
+	double timediff;
+	double* x1 = new double[MAXARRAY];
+	
+	EnterCriticalSection(&sync);
+	initarr(staticarr, x1);
+	LeaveCriticalSection(&sync);
+	
+	start = clock();
+	bubblesort(x1, MAXARRAY);
+	end = clock();
+	timediff = (end - start)/(double)CLOCKS_PER_SEC;
+	
+	EnterCriticalSection(&sync);
+	fout << "Bubble Sort   N = " << MAXARRAY << endl;
+	print(x1, fout, timediff);
+	LeaveCriticalSection(&sync);
+
+	return 3;
+}
+unsigned __stdcall thread2( void *arg )
+{
+	clock_t start, end;
+	double timediff;
+	double* x2 = new double[MAXARRAY];
+	
+	EnterCriticalSection(&sync);
+	initarr(staticarr, x2);
+	LeaveCriticalSection(&sync);
+	
+	start = clock();
+	selectsort(x2, MAXARRAY);
+	end = clock();
+	timediff = (end - start)/(double)CLOCKS_PER_SEC;
+	
+	EnterCriticalSection(&sync);
+	fout << "Select Sort   N = " << MAXARRAY << endl;
+	print(x2, fout, timediff);
+	LeaveCriticalSection(&sync);
+
+	return 3;
+}
+unsigned __stdcall thread3( void *arg )
+{
+	clock_t start, end;
+	double timediff;
+	double* x3 = new double[MAXARRAY];
+	
+	EnterCriticalSection(&sync);
+	initarr(staticarr, x3);
+	LeaveCriticalSection(&sync);
+	
+	start = clock();
+	insertionsort(x3, MAXARRAY);
+	end = clock();
+	timediff = (end - start)/(double)CLOCKS_PER_SEC;
+	
+	EnterCriticalSection(&sync);
+	fout << "Insertion Sort   N = " << MAXARRAY << endl;
+	print(x3, fout, timediff);
+	LeaveCriticalSection(&sync);
+
+	return 3;
+}
+unsigned __stdcall thread4( void *arg )
+{
+	clock_t start, end;
+	double timediff;
+	double* x4 = new double[MAXARRAY];
+	
+	EnterCriticalSection(&sync);
+	initarr(staticarr, x4);
+	LeaveCriticalSection(&sync);
+	
+	start = clock();
+	quicksort(x4,0, MAXARRAY - 1);
+	end = clock();
+	timediff = (end - start)/(double)CLOCKS_PER_SEC;
+	
+	EnterCriticalSection(&sync);
+	fout << "Quick Sort   N = " << MAXARRAY << endl;
+	print(x4, fout, timediff);
+	LeaveCriticalSection(&sync);
+
+	return 3;
+}
+unsigned __stdcall thread5( void *arg )
+{
+	clock_t start, end;
+	double timediff;
+	double* x5 = new double[MAXARRAY];
+	
+	[code]EnterCriticalSection(&sync);
+	initarr(staticarr, x5);
+	LeaveCriticalSection(&sync);
+	
+	start = clock();
+	shellsort(x5, MAXARRAY);
+	end = clock();
+	timediff = (end - start)/(double)CLOCKS_PER_SEC;
+	
+	EnterCriticalSection(&sync);
+	fout << "Shell Sort   N = " << MAXARRAY << endl;
+	print(x5, fout, timediff);
+	LeaveCriticalSection(&sync);
+
+	return 3;
+}
