@@ -61,13 +61,8 @@
  LDI R16, $08 ; 0000 1000
  OUT SFIOR, R16
 
- LDI R16, $00
- OUT ADCSRA, R16
 
- Wait: SBIC ACSR, ACO ;if (+)- (-) <0 => ACO =0  skip if bit is cleared
- RJMP Wait
- RJMP LED
-
- LED:
 
 SBI PORTC,0*/
+// comment ---> shakiba hajili 
+// learn github
