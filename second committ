@@ -1,0 +1,73 @@
+.ORG 0
+ SBI DDRC, 0  ;portC.0 as output
+
+ CBI PORTC,0
+
+ LDI R16,$A4
+ OUT ADCSRA, R16
+
+ LDI R16,$62
+ OUT ADMUX, R16
+
+ LDI R16,$80
+ OUT SFIOR, R16
+
+
+ SBI ADCSRA, ADSC //start conversion
+
+ Waitt: SBIS ADCSRA,ADIF   // if ADIF in ADCSRA is set = converting is done and answer is in ADC 
+       RJMP Waitt 
+
+	   IN R16, ADCL
+	   IN R17,ADCH
+
+	   CPI R17,$CC
+	   BRGE TurnOn
+
+
+	   CBI PORTC,0
+	   JMP Exit
+
+	   TurnOn:
+	   SBI PORTC,0
+
+	   Exit:
+/*Compare:
+
+
+
+
+ // ACSR:  ACD  ACBG ACO ACI ACIE ACIC ACIS1 ACIS0
+ //        0    1    1   0   0    0    0    0       
+ //      not disable , ref voltage for positive input , initial value of output, no interrupt
+
+ // ADMUX: ? ? ? ?  MUX3 MUX2 MUX1 MUX0
+ //        0 0 0 0   0    0   1     1    => Analog comparator negative input= ADC3
+ 
+ // SFIOR: ? ? ? ? ACME ? ? ? 
+ //        0 0 0 0  1   0 0 0 
+
+ // ADCSRA: ADEN ? ? ? ? ? ? ?
+ //  
+
+ 
+
+ LDI R16, $60 ; 0110 0000  
+ OUT ACSR, R16
+
+ LDI R16, $03 ; 0000 0011
+ OUT ADMUX, R16
+
+ LDI R16, $08 ; 0000 1000
+ OUT SFIOR, R16
+
+ LDI R16, $00
+ OUT ADCSRA, R16
+
+ Wait: SBIC ACSR, ACO ;if (+)- (-) <0 => ACO =0  skip if bit is cleared
+ RJMP Wait
+ RJMP LED
+
+ LED:
+
+SBI PORTC,0*/
